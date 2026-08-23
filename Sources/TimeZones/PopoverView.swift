@@ -14,14 +14,9 @@ struct PopoverView: View {
             } else {
                 List {
                     ForEach(store.selected) { zone in
-                        TimeZoneRow(zone: zone)
+                        TimeZoneRow(zone: zone, onRemove: { store.remove(zone) })
                             .listRowInsets(EdgeInsets(top: 6, leading: 14, bottom: 6, trailing: 14))
                             .listRowSeparator(.hidden)
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) { store.remove(zone) } label: {
-                                    Label("Remove", systemImage: "trash")
-                                }
-                            }
                     }
                     .onMove(perform: store.move)
                 }
@@ -102,11 +97,22 @@ struct PopoverView: View {
 
 struct TimeZoneRow: View {
     let zone: WorldTimeZone
+    let onRemove: () -> Void
     @State private var now = Date()
+    @State private var isHovering = false
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        HStack {
+        HStack(spacing: 8) {
+            Button(action: onRemove) {
+                Image(systemName: "minus.circle.fill")
+                    .font(.system(size: 15))
+                    .foregroundStyle(.red)
+            }
+            .buttonStyle(.plain)
+            .opacity(isHovering ? 1 : 0)
+            .frame(width: 15)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(zone.displayName)
                     .font(.system(size: 13, weight: .medium))
@@ -125,6 +131,8 @@ struct TimeZoneRow: View {
             }
         }
         .padding(.vertical, 4)
+        .contentShape(Rectangle())
+        .onHover { hovering in isHovering = hovering }
         .onReceive(timer) { now = $0 }
     }
 
