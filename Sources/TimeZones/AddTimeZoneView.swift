@@ -10,6 +10,7 @@ struct AddTimeZoneView: View {
         guard !query.isEmpty else { return notSelected }
         return notSelected.filter {
             $0.displayName.localizedCaseInsensitiveContains(query) ||
+            $0.country.localizedCaseInsensitiveContains(query) ||
             $0.id.localizedCaseInsensitiveContains(query)
         }
     }
@@ -31,7 +32,7 @@ struct AddTimeZoneView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
                     .font(.system(size: 12))
-                TextField("Search cities or regions", text: $query)
+                TextField("Search by city or country", text: $query)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
             }
@@ -46,10 +47,15 @@ struct AddTimeZoneView: View {
                     store.add(zone)
                 } label: {
                     HStack {
-                        Text(zone.displayName)
-                            .font(.system(size: 13))
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(zone.displayName)
+                                .font(.system(size: 13, weight: .medium))
+                            Text(zone.country)
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
                         Spacer()
-                        Text(zone.id)
+                        Text(TimeFormatting.offsetString(for: zone.timeZone))
                             .font(.system(size: 10))
                             .foregroundStyle(.secondary)
                     }

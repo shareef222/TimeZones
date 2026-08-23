@@ -116,7 +116,7 @@ struct TimeZoneRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(zone.displayName)
                     .font(.system(size: 13, weight: .medium))
-                Text(dayDifference)
+                Text(subtitle)
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }
@@ -141,6 +141,10 @@ struct TimeZoneRow: View {
         f.dateFormat = "h:mm:ss a"
         f.timeZone = zone.timeZone
         return f.string(from: now)
+    }
+
+    private var subtitle: String {
+        dayDifference == "Today" ? zone.country : "\(zone.country) · \(dayDifference)"
     }
 
     private var dayDifference: String {

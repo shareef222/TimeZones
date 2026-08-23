@@ -3,6 +3,7 @@ import Foundation
 struct WorldTimeZone: Identifiable, Codable, Equatable, Hashable {
     let id: String
     let displayName: String
+    let country: String
 
     var timeZone: TimeZone { TimeZone(identifier: id) ?? .current }
 }
@@ -56,12 +57,11 @@ final class TimeZoneStore: ObservableObject {
     }
 
     private static func buildCatalog() -> [WorldTimeZone] {
-        TimeZone.knownTimeZoneIdentifiers
-            .filter { $0.contains("/") && !$0.hasPrefix("Etc/") }
-            .map { id -> WorldTimeZone in
+        tzCountryByIdentifier
+            .map { id, country -> WorldTimeZone in
                 let cityRaw = id.split(separator: "/").last.map(String.init) ?? id
                 let city = cityRaw.replacingOccurrences(of: "_", with: " ")
-                return WorldTimeZone(id: id, displayName: city)
+                return WorldTimeZone(id: id, displayName: city, country: country)
             }
             .sorted { $0.displayName < $1.displayName }
     }
