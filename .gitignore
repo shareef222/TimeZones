@@ -1,0 +1,5 @@
+.build/
+.swiftpm/
+TimeZones.app/
+*.xcodeproj
+.DS_Store
