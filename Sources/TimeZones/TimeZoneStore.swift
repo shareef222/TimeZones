@@ -3,15 +3,18 @@ import Foundation
 struct WorldTimeZone: Identifiable, Codable, Equatable, Hashable {
     let id: String
     let displayName: String
+    let asciiName: String
     let country: String
+    let timeZoneID: String
+    let population: Int
 
-    var timeZone: TimeZone { TimeZone(identifier: id) ?? .current }
+    var timeZone: TimeZone { TimeZone(identifier: timeZoneID) ?? .current }
 
     func matches(_ query: String) -> Bool {
         guard !query.isEmpty else { return true }
         if displayName.localizedCaseInsensitiveContains(query)
-            || country.localizedCaseInsensitiveContains(query)
-            || id.localizedCaseInsensitiveContains(query) {
+            || asciiName.localizedCaseInsensitiveContains(query)
+            || country.localizedCaseInsensitiveContains(query) {
             return true
         }
         return (countryAliases[country] ?? []).contains {
@@ -40,8 +43,12 @@ final class TimeZoneStore: ObservableObject {
            !saved.isEmpty {
             self.selected = saved
         } else {
-            let defaultIDs = ["America/New_York", "America/Los_Angeles", "Europe/London", "Asia/Tokyo"]
-            self.selected = defaultIDs.compactMap { id in catalog.first(where: { $0.id == id }) }
+            let defaults: [(String, String)] = [
+                ("New York City", "US"), ("Los Angeles", "US"), ("London", "GB"), ("Tokyo", "JP"),
+            ]
+            self.selected = defaults.compactMap { name, countryCode in
+                catalog.first { $0.displayName == name && $0.country == (countryNameByCode[countryCode] ?? countryCode) }
+            }
         }
     }
 
@@ -69,13 +76,37 @@ final class TimeZoneStore: ObservableObject {
     }
 
     private static func buildCatalog() -> [WorldTimeZone] {
-        tzCountryByIdentifier
-            .map { id, country -> WorldTimeZone in
-                let cityRaw = id.split(separator: "/").last.map(String.init) ?? id
-                let city = cityRaw.replacingOccurrences(of: "_", with: " ")
-                return WorldTimeZone(id: id, displayName: city, country: country)
-            }
-            .sorted { $0.displayName < $1.displayName }
+        guard let url = Bundle.main.url(forResource: "Cities", withExtension: "tsv"),
+              let content = try? String(contentsOf: url, encoding: .utf8) else {
+            return []
+        }
+
+        var result: [WorldTimeZone] = []
+        result.reserveCapacity(35000)
+
+        for line in content.split(separator: "\n", omittingEmptySubsequences: true) {
+            let parts = line.split(separator: "\t", omittingEmptySubsequences: false)
+            guard parts.count == 6 else { continue }
+            let geonameID = parts[0]
+            let name = String(parts[1])
+            let asciiName = String(parts[2])
+            let countryCode = String(parts[3])
+            let timeZoneID = String(parts[4])
+            let population = Int(parts[5]) ?? 0
+            let country = countryNameByCode[countryCode] ?? countryCode
+
+            result.append(
+                WorldTimeZone(
+                    id: String(geonameID),
+                    displayName: name,
+                    asciiName: asciiName,
+                    country: country,
+                    timeZoneID: timeZoneID,
+                    population: population
+                )
+            )
+        }
+        return result
     }
 }
 

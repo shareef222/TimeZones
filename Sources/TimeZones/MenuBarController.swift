@@ -4,7 +4,7 @@ import SwiftUI
 final class MenuBarController: NSObject {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
-    private var tooltipTimer: Timer?
+    private var hoverPanel: NSPanel!
     private let store = TimeZoneStore.shared
 
     override init() {
@@ -22,6 +22,14 @@ final class MenuBarController: NSObject {
             button.image = image
             button.action = #selector(togglePopover(_:))
             button.target = self
+
+            let trackingArea = NSTrackingArea(
+                rect: button.bounds,
+                options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+                owner: self,
+                userInfo: nil
+            )
+            button.addTrackingArea(trackingArea)
         }
 
         popover = NSPopover()
@@ -29,38 +37,47 @@ final class MenuBarController: NSObject {
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(rootView: PopoverView().environmentObject(store))
 
-        updateTooltip()
-        let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
-            self?.updateTooltip()
-        }
-        RunLoop.main.add(timer, forMode: .common)
-        tooltipTimer = timer
+        let panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        panel.isFloatingPanel = true
+        panel.level = .popUpMenu
+        panel.hasShadow = true
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hidesOnDeactivate = false
+        panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        panel.contentViewController = NSHostingController(
+            rootView: HoverCardView(store: store)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .padding(6)
+        )
+        hoverPanel = panel
     }
 
-    private func updateTooltip() {
-        guard let button = statusItem.button else { return }
-        if store.selected.isEmpty {
-            button.toolTip = "TimeZones — click to add a city"
-            return
-        }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        let now = Date()
-        let lines = store.selected.map { zone -> String in
-            formatter.timeZone = zone.timeZone
-            let time = formatter.string(from: now)
-            let offset = TimeFormatting.offsetString(for: zone.timeZone, at: now)
-            return "\(zone.displayName)   \(time)   \(offset)"
-        }
-        button.toolTip = lines.joined(separator: "\n")
+    @objc func mouseEntered(with event: NSEvent) {
+        guard let button = statusItem.button, !popover.isShown else { return }
+        let content = hoverPanel.contentViewController!.view
+        content.layoutSubtreeIfNeeded()
+        let size = content.fittingSize
+        guard let buttonWindow = button.window else { return }
+        let buttonFrameOnScreen = buttonWindow.convertToScreen(button.convert(button.bounds, to: nil))
+        let origin = NSPoint(
+            x: buttonFrameOnScreen.midX - size.width / 2,
+            y: buttonFrameOnScreen.minY - size.height - 4
+        )
+        hoverPanel.setFrame(NSRect(origin: origin, size: size), display: false)
+        hoverPanel.orderFrontRegardless()
+    }
+
+    @objc func mouseExited(with event: NSEvent) {
+        hoverPanel.orderOut(nil)
     }
 
     @objc private func togglePopover(_ sender: AnyObject) {
+        hoverPanel.orderOut(nil)
         guard let button = statusItem.button else { return }
         if popover.isShown {
             popover.performClose(sender)
         } else {
-            updateTooltip()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }

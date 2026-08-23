@@ -15,6 +15,7 @@ mkdir -p "$APP_BUNDLE/Contents/Resources"
 
 cp "$BUILD_DIR/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 cp Resources/Info.plist "$APP_BUNDLE/Contents/Info.plist"
+cp Resources/Cities.tsv "$APP_BUNDLE/Contents/Resources/Cities.tsv"
 
 if [ -f Resources/AppIcon.icns ]; then
   cp Resources/AppIcon.icns "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
