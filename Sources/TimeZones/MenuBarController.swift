@@ -15,8 +15,11 @@ final class MenuBarController: NSObject {
     private func setup() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "globe.americas.fill", accessibilityDescription: "TimeZones")
-            button.image?.isTemplate = true
+            let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+            let image = NSImage(systemSymbolName: "globe", accessibilityDescription: "TimeZones")?
+                .withSymbolConfiguration(config)
+            image?.isTemplate = true
+            button.image = image
             button.action = #selector(togglePopover(_:))
             button.target = self
         }
