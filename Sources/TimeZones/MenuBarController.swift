@@ -53,22 +53,24 @@ final class MenuBarController: NSObject {
         hoverPanel = panel
     }
 
-    @objc func mouseEntered(with event: NSEvent) {
+    @objc(mouseEntered:) func mouseEntered(with event: NSEvent) {
         guard let button = statusItem.button, !popover.isShown else { return }
-        let content = hoverPanel.contentViewController!.view
-        content.layoutSubtreeIfNeeded()
-        let size = content.fittingSize
         guard let buttonWindow = button.window else { return }
+
+        let rowCount = max(store.selected.count, 1)
+        let width: CGFloat = 260
+        let height: CGFloat = CGFloat(rowCount) * 26 + 24
+
         let buttonFrameOnScreen = buttonWindow.convertToScreen(button.convert(button.bounds, to: nil))
         let origin = NSPoint(
-            x: buttonFrameOnScreen.midX - size.width / 2,
-            y: buttonFrameOnScreen.minY - size.height - 4
+            x: buttonFrameOnScreen.midX - width / 2,
+            y: buttonFrameOnScreen.minY - height - 4
         )
-        hoverPanel.setFrame(NSRect(origin: origin, size: size), display: false)
+        hoverPanel.setFrame(NSRect(origin: origin, size: NSSize(width: width, height: height)), display: true)
         hoverPanel.orderFrontRegardless()
     }
 
-    @objc func mouseExited(with event: NSEvent) {
+    @objc(mouseExited:) func mouseExited(with event: NSEvent) {
         hoverPanel.orderOut(nil)
     }
 
