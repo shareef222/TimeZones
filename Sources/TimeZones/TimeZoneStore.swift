@@ -6,6 +6,18 @@ struct WorldTimeZone: Identifiable, Codable, Equatable, Hashable {
     let country: String
 
     var timeZone: TimeZone { TimeZone(identifier: id) ?? .current }
+
+    func matches(_ query: String) -> Bool {
+        guard !query.isEmpty else { return true }
+        if displayName.localizedCaseInsensitiveContains(query)
+            || country.localizedCaseInsensitiveContains(query)
+            || id.localizedCaseInsensitiveContains(query) {
+            return true
+        }
+        return (countryAliases[country] ?? []).contains {
+            $0.localizedCaseInsensitiveContains(query)
+        }
+    }
 }
 
 final class TimeZoneStore: ObservableObject {

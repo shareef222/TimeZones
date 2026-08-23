@@ -420,3 +420,35 @@ let tzCountryByIdentifier: [String: String] = [
     "Africa/Lusaka": "Zambia",
     "Africa/Harare": "Zimbabwe",
 ]
+
+// Hand-maintained: common/colloquial names that don't literally appear in the
+// ISO 3166 names above (e.g. the UK's constituent countries all share one
+// timezone and are filed under "Britain (UK)"), so search still finds them.
+let countryAliases: [String: [String]] = [
+    "Britain (UK)": ["United Kingdom", "UK", "England", "Scotland", "Wales", "Northern Ireland", "Great Britain"],
+    "Korea (South)": ["South Korea"],
+    "Korea (North)": ["North Korea"],
+    "Côte d’Ivoire": ["Ivory Coast", "Cote d'Ivoire", "Cote d’Ivoire"],
+    "Czech Republic": ["Czechia"],
+    "Netherlands": ["Holland"],
+    "Macau": ["Macao"],
+    "East Timor": ["Timor-Leste", "Timor Leste"],
+    "United States": ["USA", "US", "America"],
+    "United Arab Emirates": ["UAE"],
+    "Trinidad & Tobago": ["Trinidad and Tobago"],
+    "Antigua & Barbuda": ["Antigua and Barbuda"],
+    "Bosnia & Herzegovina": ["Bosnia and Herzegovina"],
+    "St Kitts & Nevis": ["Saint Kitts and Nevis", "Saint Kitts & Nevis"],
+    "St Lucia": ["Saint Lucia"],
+    "St Vincent": ["Saint Vincent"],
+    "St Helena": ["Saint Helena"],
+    "St Barthelemy": ["Saint Barthelemy", "St Barts"],
+    "St Martin (French)": ["Saint Martin"],
+    "St Maarten (Dutch)": ["Sint Maarten", "Saint Maarten"],
+    "St Pierre & Miquelon": ["Saint Pierre and Miquelon"],
+    "Sao Tome & Principe": ["Sao Tome and Principe"],
+    "Congo (Dem. Rep.)": ["DRC", "Democratic Republic of the Congo", "DR Congo"],
+    "Congo (Rep.)": ["Republic of the Congo"],
+    "Eswatini (Swaziland)": ["Swaziland"],
+    "Myanmar (Burma)": ["Burma"],
+]

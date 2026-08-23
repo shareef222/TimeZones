@@ -8,11 +8,7 @@ struct AddTimeZoneView: View {
     private var filtered: [WorldTimeZone] {
         let notSelected = store.all.filter { !store.selected.contains($0) }
         guard !query.isEmpty else { return notSelected }
-        return notSelected.filter {
-            $0.displayName.localizedCaseInsensitiveContains(query) ||
-            $0.country.localizedCaseInsensitiveContains(query) ||
-            $0.id.localizedCaseInsensitiveContains(query)
-        }
+        return notSelected.filter { $0.matches(query) }
     }
 
     var body: some View {

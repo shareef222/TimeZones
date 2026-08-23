@@ -62,4 +62,4 @@ The city → country mapping in `TimeZoneCatalogData.swift` is generated from th
 
 ## License
 
-Personal project, no license specified.
+[MIT](LICENSE) — free to use, modify, and distribute.
